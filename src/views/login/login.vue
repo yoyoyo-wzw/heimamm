@@ -158,7 +158,7 @@ export default {
           {
             type: "date",
             required: true,
-            message: "请选择时间",
+            message: "请选择时间啊",
             trigger: "change"
           }
         ],
