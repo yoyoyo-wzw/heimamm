@@ -1,30 +1,30 @@
 <template>
   <div class="login-box">
-    <div class="from-box">
+    <div class="form-box">
       <!-- 表单标题 -->
-      <div class="from-title">
+      <div class="form-title">
         <img class="title-log" src="../../assets/title-log.png" alt />
         <span class="title">黑马面面</span>
         <i></i>
         <span class="sub_title">用户登录</span>
       </div>
       <!-- 表单内容 -->
-      <el-form ref="form" :model="from" class="from-con">
+      <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="form-con">
         <!-- 手机号 -->
-        <el-form-item>
+        <el-form-item prop="phone">
           <el-input
             class="input"
-            v-model="form.name"
+            v-model="loginForm.phone"
             placeholder="请输入手机号"
             prefix-icon="el-icon-user"
           ></el-input>
         </el-form-item>
         <!-- 密码 -->
-        <el-form-item>
+        <el-form-item prop="password">
           <el-input
             class="input"
             show-password
-            v-model="form.name"
+            v-model="loginForm.password"
             placeholder="请输入密码"
             prefix-icon="el-icon-user"
           ></el-input>
@@ -32,22 +32,22 @@
         <!-- 验证码 -->
         <el-row>
           <el-col :span="18">
-            <el-form-item>
+            <el-form-item prop="captcha">
               <el-input
                 class="input"
-                v-model="form.name"
+                v-model="loginForm.captcha"
                 placeholder="请输入验证码"
                 prefix-icon="el-icon-user"
               ></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <img class="captcha" src="../../assets/captcha.png" alt />
+            <img class="captcha" :src="loginForm.captchaURL" @click="refrechCaptchaURL" alt />
           </el-col>
         </el-row>
         <!-- 协议条款 -->
         <el-form-item>
-          <el-checkbox v-model="form.checked" class="el-checkbox">
+          <el-checkbox v-model="loginForm.checked" class="el-checkbox">
             我已阅读并同意
             <el-link type="primary">用户协议</el-link>和
             <el-link type="primary">隐私条款</el-link>
@@ -56,126 +56,95 @@
 
         <!-- 按钮 -->
         <el-form-item>
-          <el-button type="primary">登录</el-button>
+          <el-button type="primary" @click="submitForm">登录</el-button>
           <el-button type="primary">注册</el-button>
         </el-form-item>
       </el-form>
     </div>
     <img class="login-pic" src="../../assets/login_banner_ele.png" alt />
-    <!-- 遮罩层 -->
-    <div class="layer"></div>
-    <!-- 注册盒子 -->
-    <div class="register-box">
-      <div class="register-title">用户注册</div>
-      <el-form
-        :model="ruleForm"
-        :rules="rules"
-        ref="ruleForm"
-        label-width="100px"
-        class="demo-ruleForm"
-      >
-        <el-form-item label="活动名称" prop="name">
-          <el-input v-model="ruleForm.name"></el-input>
-        </el-form-item>
-        <el-form-item label="活动区域" prop="region">
-          <el-select v-model="ruleForm.region" placeholder="请选择活动区域">
-            <el-option label="区域一" value="shanghai"></el-option>
-            <el-option label="区域二" value="beijing"></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="活动时间" required>
-          <el-col :span="11">
-            <el-form-item prop="date1">
-              <el-date-picker
-                type="date"
-                placeholder="选择日期"
-                v-model="ruleForm.date1"
-                style="width: 100%;"
-              ></el-date-picker>
-            </el-form-item>
-          </el-col>
-          <el-col class="line" :span="2">-</el-col>
-          <el-col :span="11">
-            <el-form-item prop="date2">
-              <el-time-picker placeholder="选择时间" v-model="ruleForm.date2" style="width: 100%;"></el-time-picker>
-            </el-form-item>
-          </el-col>
-        </el-form-item>
-        <el-form-item label="即时配送" prop="delivery">
-          <el-switch v-model="ruleForm.delivery"></el-switch>
-        </el-form-item>
-        <el-form-item label="活动性质" prop="type">
-          <el-checkbox-group v-model="ruleForm.type">
-            <el-checkbox label="美食/餐厅线上活动" name="type"></el-checkbox>
-            <el-checkbox label="地推活动" name="type"></el-checkbox>
-            <el-checkbox label="线下主题活动" name="type"></el-checkbox>
-            <el-checkbox label="单纯品牌曝光" name="type"></el-checkbox>
-          </el-checkbox-group>
-        </el-form-item>
-        <el-form-item label="特殊资源" prop="resource">
-          <el-radio-group v-model="ruleForm.resource">
-            <el-radio label="线上品牌商赞助"></el-radio>
-            <el-radio label="线下场地免费"></el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="活动形式" prop="desc">
-          <el-input type="textarea" v-model="ruleForm.desc"></el-input>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary">立即创建</el-button>
-          <el-button>重置</el-button>
-        </el-form-item>
-      </el-form>
-    </div>
   </div>
 </template>
 
 <script>
+import axios from "axios";
 export default {
   data() {
-    return {
-      form: {
-        name: "",
-        checked: true
-      },
-      rules: {
-        name: [
-          { required: true, message: "请输入活动名称", trigger: "blur" },
-          { min: 3, max: 5, message: "长度在 3 到 5 个字符", trigger: "blur" }
-        ],
-        region: [
-          { required: true, message: "请选择活动区域", trigger: "change" }
-        ],
-        date1: [
-          {
-            type: "date",
-            required: true,
-            message: "请选择日期",
-            trigger: "change"
-          }
-        ],
-        date2: [
-          {
-            type: "date",
-            required: true,
-            message: "请选择时间啊",
-            trigger: "change"
-          }
-        ],
-        type: [
-          {
-            type: "array",
-            required: true,
-            message: "请至少选择一个活动性质",
-            trigger: "change"
-          }
-        ],
-        resource: [
-          { required: true, message: "请选择活动资源", trigger: "change" }
-        ],
-        desc: [{ required: true, message: "请填写活动形式", trigger: "blur" }]
+    // 判断手机号--使用正则
+    var validatePhone = (rule, value, callback) => {
+      if (value === "") {
+        return callback(new Error("请输入手机号"));
+      } else {
+        const reg = /^(0|86|17951)?(13[0-9]|15[012356789]|17[678]|18[0-9]|14[57])[0-9]{8}$/;
+        if (reg.test(value)) {
+          callback();
+        } else {
+          callback(new Error("输入正确的手机号"));
+        }
       }
     };
+    return {
+      // 登录数据
+      loginForm: {
+        phone: "",
+        password: "",
+        captcha: "",
+        checked: false,
+        captchaURL: process.env.VUE_APP_BASEURL + "/captcha?type=login"
+      },
+      // 登录规则
+      loginRules: {
+        phone: [{ required: true, validator: validatePhone, trigger: "blur" }],
+        password: [
+          { required: true, message: "请输入密码", trigger: "change" },
+          {
+            min: 6,
+            max: 18,
+            message: "长度在 6 到 18 个字符",
+            trigger: "change"
+          }
+        ],
+        captcha: [
+          { required: true, message: "请输入验证码", trigger: "change" },
+          { min: 4, max: 4, message: "验证码长度为4", trigger: "change" }
+        ]
+      }
+    };
+  },
+  methods: {
+    // 登录按钮
+    submitForm() {
+      this.$refs.loginForm.validate(valid => {
+        // 是否勾选协议
+        if (this.loginForm.checked == true) {
+          // 输入框全部输入正常
+          if (valid) {
+            // 发送axios获取登录信息
+            axios({
+              url: process.env.VUE_APP_BASEURL + "/login",
+              method: "post",
+              // 跨域请求可以携带cookie
+              withCredentials: true,
+              data: {
+                phone: this.loginForm.phone,
+                password: this.loginForm.password,
+                code: this.loginForm.captcha
+              }
+            }).then(res => {
+              window.console.log(res);
+            });
+          } else {
+            this.$message.warning("信息输入错误");
+          }
+        } else {
+          this.$message.warning("勾选协议");
+        }
+      });
+    },
+    // 刷新验证码
+    refrechCaptchaURL() {
+      this.loginForm.captchaURL =
+        process.env.VUE_APP_BASEURL + "/captcha?type=login&" + Math.random();
+    }
   }
 };
 </script>
@@ -195,7 +164,7 @@ export default {
   );
 
   // 表单盒子
-  .from-box {
+  .form-box {
     width: 478px;
     height: 550px;
     background-color: #f5f5f5;
@@ -203,7 +172,7 @@ export default {
     box-sizing: border-box;
 
     // 表单标题
-    .from-title {
+    .form-title {
       display: flex;
       align-items: center;
       font-weight: 400;
@@ -230,7 +199,7 @@ export default {
     }
 
     // 表单内容
-    .from-con {
+    .form-con {
       .input {
         height: 44px;
       }
@@ -259,35 +228,6 @@ export default {
           margin-left: 0;
         }
       }
-    }
-  }
-
-  // 遮罩层
-  .layer {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0.6;
-    z-index: 1;
-    background-color: black;
-  }
-
-  // 注册盒子
-  .register-box {
-    position: fixed;
-    width: 602px;
-    height: 786px;
-    background-color: #ffffff;
-    z-index: 2;
-    .register-title {
-      height: 53px;
-      background-color: skyblue;
-      text-align: center;
-      line-height: 53px;
-      font-size: 18px;
-      color: #fefefe;
     }
   }
 }
