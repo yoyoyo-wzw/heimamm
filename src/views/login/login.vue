@@ -1,6 +1,7 @@
 <template>
   <div class="login-box">
-    <div class="form-box">
+    <!-- 登录表单 -->
+    <div class="loginform-box">
       <!-- 表单标题 -->
       <div class="form-title">
         <img class="title-log" src="../../assets/title-log.png" alt />
@@ -53,15 +54,54 @@
             <el-link type="primary">隐私条款</el-link>
           </el-checkbox>
         </el-form-item>
-
         <!-- 按钮 -->
         <el-form-item>
           <el-button type="primary" @click="submitForm">登录</el-button>
-          <el-button type="primary">注册</el-button>
+          <el-button type="primary" @click="dialogFormVisible = true">注册</el-button>
         </el-form-item>
       </el-form>
     </div>
+    <!-- 背景图片 -->
     <img class="login-pic" src="../../assets/login_banner_ele.png" alt />
+    <!-- 注册表单 -->
+    <el-dialog title="用户注册" :visible.sync="dialogFormVisible" :showClose="false" center>
+      <el-form :model="registerForm">
+        <el-form-item label="头像" :label-width="formLabelWidth">
+          <el-upload
+            class="avatar-uploader"
+            :action="registerForm.headIcon"
+            :show-file-list="false"
+            :on-success="handleAvatarSuccess"
+            :before-upload="beforeAvatarUpload"
+          >
+            <img v-if="registerForm.imageUrl" :src="registerForm.imageUrl" class="avatar" />
+            <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+          </el-upload>
+        </el-form-item>
+        <el-form-item label="昵称" :label-width="formLabelWidth">
+          <el-input v-model="registerForm.name" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="邮箱" :label-width="formLabelWidth">
+          <el-input v-model="registerForm.name" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="手机" :label-width="formLabelWidth">
+          <el-input v-model="registerForm.name" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="密码" :label-width="formLabelWidth">
+          <el-input v-model="registerForm.name" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="图形码" :label-width="formLabelWidth">
+          <el-input v-model="registerForm.name" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="验证码" :label-width="formLabelWidth">
+          <el-input v-model="registerForm.name" autocomplete="off"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -107,7 +147,17 @@ export default {
           { required: true, message: "请输入验证码", trigger: "change" },
           { min: 4, max: 4, message: "验证码长度为4", trigger: "change" }
         ]
-      }
+      },
+      // 注册数据
+      registerForm: {
+        name: "",
+        headIcon: process.env.VUE_APP_BASEURL + '/uploads',
+        imageUrl: "",
+      },
+      // 注册表单宽度
+      formLabelWidth: "60px",
+      // 点击注册按钮,弹出注册表单
+      dialogFormVisible: false
     };
   },
   methods: {
@@ -144,6 +194,24 @@ export default {
     refrechCaptchaURL() {
       this.loginForm.captchaURL =
         process.env.VUE_APP_BASEURL + "/captcha?type=login&" + Math.random();
+    },
+    // 上传文件成功
+    handleAvatarSuccess(res, file) {
+      this.registerForm.imageUrl = URL.createObjectURL(file.raw);
+    },
+    // 上传文件之前
+    beforeAvatarUpload(file) {
+      // window.console.log(file);
+      const isJPG = file.type === "image/jpeg" || file.type === "image/png";
+      const isLt2M = file.size / 1024 / 1024 < 2;
+
+      if (!isJPG) {
+        this.$message.error("上传头像图片只能是 JPG 或 png 格式!");
+      }
+      if (!isLt2M) {
+        this.$message.error("上传头像图片大小不能超过 2MB!");
+      }
+      return isJPG && isLt2M;
     }
   }
 };
@@ -163,8 +231,8 @@ export default {
     rgba(1, 198, 250, 1)
   );
 
-  // 表单盒子
-  .form-box {
+  // 登录表单盒子
+  .loginform-box {
     width: 478px;
     height: 550px;
     background-color: #f5f5f5;
@@ -228,6 +296,50 @@ export default {
           margin-left: 0;
         }
       }
+    }
+  }
+
+  // 注册表单盒子
+  .el-dialog {
+    width: 603px;
+    // 表单标题
+    .el-dialog__header {
+      padding-bottom: 20px;
+      background: linear-gradient(
+        to right,
+        rgb(1, 197, 250),
+        rgb(19, 148, 250)
+      );
+      .el-dialog__title {
+        color: #fff;
+      }
+    }
+    // 文件上传
+    .avatar-uploader .el-upload {
+      border: 1px dashed #d9d9d9;
+      border-radius: 6px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+    .avatar-uploader .el-upload:hover {
+      border-color: #409eff;
+    }
+    .avatar-uploader-icon {
+      font-size: 28px;
+      color: #8c939d;
+      width: 178px;
+      height: 178px;
+      line-height: 178px;
+      text-align: center;
+    }
+    .avatar {
+      width: 178px;
+      height: 178px;
+      display: block;
+    }
+    .avatar-uploader {
+      text-align: center;
     }
   }
 }
